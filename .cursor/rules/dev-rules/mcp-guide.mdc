@@ -1,0 +1,82 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 📘 MCPサーバー開発 プロジェクトルール（TypeScript）
+
+このプロジェクトは [Model Context Protocol (MCP)](mdc:https:/modelcontextprotocol.io) を用いて、Claude などの LLM クライアントと連携するサーバーを構築することを目的としています。
+
+---
+
+## 📁 ディレクトリ構成ルール
+
+```
+src/
+├── mcp-server.ts      # サーバー初期化・起動
+├── tools/             # MCP Tools 関連
+│   ├── index.ts       # ハンドラー登録（list / call）
+│   ├── func.ts        # ロジック定義（実装）
+│   └── interface.ts   # 型と inputSchema 定義
+├── prompts/           # MCP Prompts 関連（必要に応じて）
+│   └── index.ts       # ハンドラー登録
+```
+
+---
+
+## 👨‍💻 コーディングルール
+
+### 1. `export function` を必ず使う
+匿名関数やインライン定義は禁止。関数は名前付きで定義する。
+
+### 2. inputSchema は `interface.ts` に集約
+各ツールの inputSchema は一箇所にまとめ、読みやすく管理。
+
+### 3. ログ出力は `server.sendLoggingMessage()` を使う
+`console.log()` は MCP の通信を壊す可能性があるため禁止。
+
+```ts
+server.sendLoggingMessage({
+  level: "info",
+  data: "Tool executed successfully"
+});
+```
+
+---
+
+## 🛠️ 実装ルール
+
+### 4. ロジックは `func.ts`、ルーティングは `index.ts`
+処理内容と通信制御は明確に分離。
+
+### 5. 引数は必ずバリデーションする
+Schema だけに頼らず、手動でも null/型チェックを行う。
+
+### 6. 処理はすべて非同期にする
+同期的なファイル/ネットワークアクセスは禁止。必ず async/await を使う。
+
+---
+
+## 📚 ドキュメント運用
+
+### 7. README.md には以下を記載
+- 起動方法（例: `npx tsx src/mcp-server.ts`）
+- 対応ツール一覧
+- Claude / MCP Inspector との接続例
+
+### 8. 型安全を意識する
+`any` や `as any` の多用は避け、明示的な型や補完可能な型定義を使用。
+
+---
+
+## 🔐 セキュリティ & 安定性
+
+### 9. 入力値を信頼しない
+受け取るデータはすべて検証する（例：ファイルパス、数値範囲など）。
+
+### 10. 長時間処理には考慮を
+タイムアウト・プログレス通知・中断処理などを考慮して設計。
+
+---
+
+必要に応じてこのルールは随時アップデートします。
